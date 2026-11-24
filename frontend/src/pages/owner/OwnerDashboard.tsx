@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import type { FoodItem, ShopDetail, ShopCategory, AvailabilityStatus } from '../../types';
-import { Store, Plus, Power, Check, AlertTriangle, XCircle, CreditCard, Clock } from 'lucide-react';
+import { Store, Plus, Power, Check, AlertTriangle, XCircle, CreditCard, Clock, QrCode } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ShopQrModal } from '../../components/ShopQrModal';
 
 export const OwnerDashboard: React.FC = () => {
   const [shop, setShop] = useState<ShopDetail | null>(null);
@@ -10,6 +11,7 @@ export const OwnerDashboard: React.FC = () => {
   const [categories, setCategories] = useState<ShopCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   // New Stall Registration Form State
@@ -316,9 +318,17 @@ export const OwnerDashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowQrModal(true)}
+              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+              title="Print Stall QR Standee"
+            >
+              <QrCode className="w-5 h-5 text-amber-600" />
+            </button>
+
             <Link
               to="/owner/subscription"
-              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700"
+              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
               title="Subscription & Billing"
             >
               <CreditCard className="w-5 h-5 text-amber-600" />
@@ -503,6 +513,10 @@ export const OwnerDashboard: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+      {/* Stall QR Standee Modal */}
+      {showQrModal && shop && (
+        <ShopQrModal shop={shop} onClose={() => setShowQrModal(false)} />
       )}
     </div>
   );

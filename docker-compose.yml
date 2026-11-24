@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # 1. Primary Relational Database
+  mysql:
+    image: mysql:8.0
+    container_name: localbite-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: localbite_db
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: localbite_user
+      MYSQL_PASSWORD: localbite_secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - localbite-network
+
+  # 2. Spring Boot 3.3.x Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: localbite-backend
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: localbite_db
+      DB_USERNAME: localbite_user
+      DB_PASSWORD: localbite_secret
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      CORS_ORIGINS: http://localhost:80,http://localhost:5173
+      RAZORPAY_KEY_ID: rzp_test_placeholder
+      RAZORPAY_KEY_SECRET: placeholder_secret
+      RAZORPAY_WEBHOOK_SECRET: placeholder_webhook_secret
+    ports:
+      - "8080:8080"
+    networks:
+      - localbite-network
+
+  # 3. React Frontend Nginx Web Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: localbite-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - localbite-network
+
+volumes:
+  mysql_data:
+
+networks:
+  localbite-network:
+    driver: bridge

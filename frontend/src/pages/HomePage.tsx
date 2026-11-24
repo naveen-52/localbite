@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import type { NearbyShop, ShopCategory } from '../types';
-import { Search, MapPin, Clock, Utensils, CheckCircle2, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { ShopMapView } from '../components/ShopMapView';
+import { Search, MapPin, Clock, Utensils, CheckCircle2, ChevronRight, SlidersHorizontal, Map as MapIcon, List as ListIcon } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
   const [shops, setShops] = useState<NearbyShop[]>([]);
@@ -11,6 +12,7 @@ export const HomePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [radiusKm, setRadiusKm] = useState(5.0);
   const [onlyOpen, setOnlyOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [loading, setLoading] = useState(true);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number }>({
     lat: 13.0827, // Default Chennai coordinates
@@ -18,7 +20,6 @@ export const HomePage: React.FC = () => {
   });
 
   useEffect(() => {
-    // Attempt browser geolocation
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -28,7 +29,7 @@ export const HomePage: React.FC = () => {
           });
         },
         () => {
-          // Keep default coordinates gracefully if denied
+          // Default coordinates retained on deny
         }
       );
     }
@@ -152,8 +153,10 @@ export const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Stalls List */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Toggle List View vs Interactive Street Map View */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
             <span>Nearby Mini Stalls</span>
@@ -161,9 +164,41 @@ export const HomePage: React.FC = () => {
               {filteredShops.length} Found
             </span>
           </h2>
+
+          <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === 'list'
+                  ? 'bg-amber-500 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <ListIcon className="w-4 h-4" />
+              <span>List View</span>
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === 'map'
+                  ? 'bg-amber-500 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <MapIcon className="w-4 h-4" />
+              <span>Street Map</span>
+            </button>
+          </div>
         </div>
 
-        {loading ? (
+        {/* View Switcher: Interactive Map or Grid Cards */}
+        {viewMode === 'map' ? (
+          <ShopMapView
+            shops={filteredShops}
+            userLocation={userLocation}
+            radiusKm={radiusKm}
+          />
+        ) : loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="bg-white rounded-2xl p-5 border border-slate-200 animate-pulse space-y-3">
