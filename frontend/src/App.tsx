@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { LandingPage } from './pages/LandingPage';
 import { HomePage } from './pages/HomePage';
 import { ShopDetailPage } from './pages/ShopDetailPage';
 import { LoginPage } from './pages/LoginPage';
@@ -37,7 +38,9 @@ export const AppContent: React.FC = () => {
       <Navbar />
       <div className="flex-1">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/explore" element={<HomePage />} />
+          <Route path="/stalls" element={<HomePage />} />
           <Route path="/shops/:slug" element={<ShopDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

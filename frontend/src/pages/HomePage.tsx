@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
 import type { NearbyShop, ShopCategory } from '../types';
 import { ShopMapView } from '../components/ShopMapView';
@@ -7,10 +7,14 @@ import { Search, MapPin, Clock, Utensils, CheckCircle2, ChevronRight, SlidersHor
 import { getCategoryDefaultBanner } from '../components/StallPhotoPicker';
 
 export const HomePage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get('category') || 'ALL';
+  const initialQuery = searchParams.get('q') || '';
+
   const [shops, setShops] = useState<NearbyShop[]>([]);
   const [categories, setCategories] = useState<ShopCategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [radiusKm, setRadiusKm] = useState(5.0);
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
@@ -21,6 +25,13 @@ export const HomePage: React.FC = () => {
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [isSearchingCity, setIsSearchingCity] = useState(false);
   const citySearchTimeout = useRef<any>(null);
+
+  useEffect(() => {
+    const cat = searchParams.get('category');
+    if (cat) setSelectedCategory(cat);
+    const q = searchParams.get('q');
+    if (q) setSearchQuery(q);
+  }, [searchParams]);
 
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number }>({
     lat: 9.5100, // Default to registered stall region or GPS
