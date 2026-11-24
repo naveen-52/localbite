@@ -14,6 +14,7 @@ export const HomePage: React.FC = () => {
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [loading, setLoading] = useState(true);
+  const [isDemoFallback, setIsDemoFallback] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number }>({
     lat: 13.0827, // Default Chennai coordinates
     lng: 80.2707,
@@ -47,11 +48,23 @@ export const HomePage: React.FC = () => {
         api.getCategories(),
       ]);
 
-      if (shopsRes.success && shopsRes.data) {
-        setShops(shopsRes.data);
-      }
       if (catRes.success && catRes.data) {
         setCategories(catRes.data);
+      }
+
+      if (shopsRes.success && shopsRes.data && shopsRes.data.length > 0) {
+        setShops(shopsRes.data);
+        setIsDemoFallback(false);
+      } else {
+        // If 0 stalls are in the user's physical GPS radius, fall back to Chennai demo stalls
+        const demoRes = await api.getNearbyShops(13.0827, 80.2707, 10.0);
+        if (demoRes.success && demoRes.data && demoRes.data.length > 0) {
+          setShops(demoRes.data);
+          setIsDemoFallback(true);
+        } else {
+          setShops([]);
+          setIsDemoFallback(false);
+        }
       }
     } catch (e) {
       console.error('Failed to fetch nearby shops:', e);
@@ -124,37 +137,99 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="mt-6 flex items-center justify-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {/* Quick Location Switcher */}
+          <div className="mt-3 flex items-center justify-center gap-2 text-xs">
+            <span className="text-slate-500 font-medium text-[11px]">Radius Center:</span>
             <button
-              onClick={() => setSelectedCategory('ALL')}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                selectedCategory === 'ALL'
-                  ? 'bg-slate-900 text-white shadow-sm'
+              onClick={() => {
+                setUserLocation({ lat: 13.0827, lng: 80.2707 });
+                setIsDemoFallback(false);
+              }}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                userLocation.lat === 13.0827 && userLocation.lng === 80.2707
+                  ? 'bg-amber-100 text-amber-900 border border-amber-300 font-bold'
                   : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
               }`}
             >
-              All Eateries
+              <MapPin className="w-3 h-3 text-amber-600" />
+              <span>Chennai Central (Demo)</span>
             </button>
-            {categories.map((cat) => (
+            <button
+              onClick={() => {
+                if (navigator.geolocation) {
+                  navigator.geolocation.getCurrentPosition((pos) => {
+                    setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                  });
+                }
+              }}
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                userLocation.lat !== 13.0827 || userLocation.lng !== 80.2707
+                  ? 'bg-amber-100 text-amber-900 border border-amber-300 font-bold'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <span>My Current GPS</span>
+            </button>
+          </div>
+
+          {/* Category Filter Pills (Fixed horizontal scroll & alignment) */}
+          <div className="mt-6 w-full max-w-4xl mx-auto overflow-x-auto pb-2 scrollbar-none">
+            <div className="flex items-center gap-2 min-w-max mx-auto px-4 justify-start md:justify-center">
               <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.name)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedCategory.toLowerCase() === cat.name.toLowerCase()
-                    ? 'bg-amber-600 text-white shadow-sm'
+                onClick={() => setSelectedCategory('ALL')}
+                className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-all ${
+                  selectedCategory === 'ALL'
+                    ? 'bg-slate-900 text-white shadow-sm ring-2 ring-slate-900/10'
                     : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                 }`}
               >
-                {cat.name}
+                All Eateries
               </button>
-            ))}
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.name)}
+                  className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-all ${
+                    selectedCategory.toLowerCase() === cat.name.toLowerCase()
+                      ? 'bg-amber-600 text-white shadow-sm ring-2 ring-amber-600/20'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Demo fallback notice banner */}
+        {isDemoFallback && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-800 shadow-sm animate-fade-in">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 flex-shrink-0">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-900">
+                  Showing Active Sample Eateries in Park Town, Chennai
+                </p>
+                <p className="text-[11px] text-slate-600">
+                  No registered stalls found within {radiusKm} km of your GPS location. Loaded sample stalls so you can explore real-time availability!
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/register"
+              className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs transition-all shadow-sm flex-shrink-0"
+            >
+              Register a Stall Here
+            </Link>
+          </div>
+        )}
         
         {/* Toggle List View vs Interactive Street Map View */}
         <div className="flex items-center justify-between mb-6">
@@ -209,22 +284,28 @@ export const HomePage: React.FC = () => {
             ))}
           </div>
         ) : filteredShops.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300 max-w-lg mx-auto">
-            <Utensils className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300 max-w-lg mx-auto p-6 shadow-sm">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-3">
+              <Utensils className="w-7 h-7" />
+            </div>
             <h3 className="text-base font-bold text-slate-800">No stalls found in this radius</h3>
             <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-              Try expanding your search radius to 5 km or 10 km, or select another food category.
+              No registered stalls found within {radiusKm} km of this location, or they don't match the selected filter.
             </p>
-            <button
-              onClick={() => {
-                setRadiusKm(10.0);
-                setSelectedCategory('ALL');
-                setOnlyOpen(false);
-              }}
-              className="mt-4 px-4 py-2 bg-amber-500 text-white text-xs font-semibold rounded-lg hover:bg-amber-600"
-            >
-              Reset Filters (10 km)
-            </button>
+            <div className="mt-5 flex items-center justify-center gap-2">
+              <button
+                onClick={() => {
+                  setUserLocation({ lat: 13.0827, lng: 80.2707 });
+                  setRadiusKm(10.0);
+                  setSelectedCategory('ALL');
+                  setOnlyOpen(false);
+                }}
+                className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-rose-500 hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span>Explore Chennai Stalls (10 km)</span>
+              </button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
