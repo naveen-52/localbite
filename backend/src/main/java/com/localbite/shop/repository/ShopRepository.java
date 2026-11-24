@@ -42,7 +42,7 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
                     sin(radians(:userLat)) * sin(radians(s.latitude))
                 )) AS distance
                 FROM shops s
-                WHERE s.verification_status = 'APPROVED'
+                WHERE s.verification_status IN ('APPROVED', 'PENDING')
             ) AS nearby
             WHERE nearby.distance <= :radiusKm
             ORDER BY nearby.distance ASC

@@ -67,6 +67,14 @@ public class DataInitializer implements CommandLineRunner {
 
         if (userRepository.count() > 0) {
             log.info("Database already seeded. Ensuring all categories exist.");
+            // Auto-approve any pending stalls in development so they immediately appear on customer map
+            shopRepository.findAll().forEach(s -> {
+                if (s.getVerificationStatus() == VerificationStatus.PENDING) {
+                    s.setVerificationStatus(VerificationStatus.APPROVED);
+                    shopRepository.save(s);
+                    log.info("Auto-approved stall: {} ({})", s.getName(), s.getCity());
+                }
+            });
             return;
         }
 

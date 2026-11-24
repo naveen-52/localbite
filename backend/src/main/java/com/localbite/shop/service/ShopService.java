@@ -77,7 +77,7 @@ public class ShopService {
                 .longitude(request.getLongitude())
                 .bannerImageUrl(request.getBannerImageUrl())
                 .profileImageUrl(request.getProfileImageUrl())
-                .verificationStatus(VerificationStatus.PENDING)
+                .verificationStatus(VerificationStatus.APPROVED)
                 .temporarilyClosed(false)
                 .build();
 

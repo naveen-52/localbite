@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import type { NearbyShop, ShopCategory } from '../types';
 import { ShopMapView } from '../components/ShopMapView';
-import { Search, MapPin, Clock, Utensils, CheckCircle2, ChevronRight, SlidersHorizontal, Map as MapIcon, List as ListIcon } from 'lucide-react';
+import { Search, MapPin, Clock, Utensils, CheckCircle2, ChevronRight, SlidersHorizontal, Map as MapIcon, List as ListIcon, Loader2, Navigation } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
   const [shops, setShops] = useState<NearbyShop[]>([]);
@@ -15,6 +15,13 @@ export const HomePage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [loading, setLoading] = useState(true);
   const [isDemoFallback, setIsDemoFallback] = useState(false);
+  const [currentCityLabel, setCurrentCityLabel] = useState('Chennai Central');
+  const [citySearchInput, setCitySearchInput] = useState('');
+  const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [isSearchingCity, setIsSearchingCity] = useState(false);
+  const citySearchTimeout = useRef<any>(null);
+
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number }>({
     lat: 13.0827, // Default Chennai coordinates
     lng: 80.2707,
@@ -28,6 +35,7 @@ export const HomePage: React.FC = () => {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
           });
+          setCurrentCityLabel('My Current GPS');
         },
         () => {
           // Default coordinates retained on deny
@@ -56,10 +64,10 @@ export const HomePage: React.FC = () => {
         setShops(shopsRes.data);
         setIsDemoFallback(false);
       } else {
-        // If 0 stalls are in the user's physical GPS radius, fall back to Chennai demo stalls
-        const demoRes = await api.getNearbyShops(13.0827, 80.2707, 10.0);
-        if (demoRes.success && demoRes.data && demoRes.data.length > 0) {
-          setShops(demoRes.data);
+        // If 0 stalls in immediate radius, check for stalls state-wide (radius 1000 km)
+        const allRes = await api.getNearbyShops(userLocation.lat, userLocation.lng, 1000.0);
+        if (allRes.success && allRes.data && allRes.data.length > 0) {
+          setShops(allRes.data);
           setIsDemoFallback(true);
         } else {
           setShops([]);
@@ -71,6 +79,47 @@ export const HomePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Google Maps Style City Search
+  const handleCitySearch = (query: string) => {
+    setCitySearchInput(query);
+    if (!query.trim() || query.length < 2) {
+      setCitySuggestions([]);
+      setShowCityDropdown(false);
+      return;
+    }
+
+    if (citySearchTimeout.current) clearTimeout(citySearchTimeout.current);
+    citySearchTimeout.current = setTimeout(async () => {
+      try {
+        setIsSearchingCity(true);
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            query
+          )}&countrycodes=in&limit=5&addressdetails=1`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setCitySuggestions(data);
+          setShowCityDropdown(data.length > 0);
+        }
+      } catch (err) {
+        console.error('City search error:', err);
+      } finally {
+        setIsSearchingCity(false);
+      }
+    }, 300);
+  };
+
+  const handleSelectCitySuggestion = (place: any) => {
+    const lat = parseFloat(place.lat);
+    const lng = parseFloat(place.lon);
+    setUserLocation({ lat, lng });
+    setCurrentCityLabel(place.display_name.split(',')[0]);
+    setCitySearchInput('');
+    setShowCityDropdown(false);
   };
 
   const filteredShops = shops.filter((shop) => {
@@ -122,6 +171,9 @@ export const HomePage: React.FC = () => {
                 <option value={3.0}>Within 3 km</option>
                 <option value={5.0}>Within 5 km</option>
                 <option value={10.0}>Within 10 km</option>
+                <option value={25.0}>Within 25 km</option>
+                <option value={50.0}>Within 50 km</option>
+                <option value={1000.0}>All Stalls (State-wide)</option>
               </select>
 
               <button
@@ -137,38 +189,126 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Location Switcher */}
-          <div className="mt-3 flex items-center justify-center gap-2 text-xs">
-            <span className="text-slate-500 font-medium text-[11px]">Radius Center:</span>
+          {/* Location / Town Search with Autocomplete */}
+          <div className="mt-4 max-w-xl mx-auto relative text-left">
+            <div className="relative">
+              <MapPin className="w-4 h-4 text-amber-600 absolute left-3.5 top-3" />
+              <input
+                type="text"
+                placeholder={`Search city or town (Currently: ${currentCityLabel})...`}
+                value={citySearchInput}
+                onChange={(e) => handleCitySearch(e.target.value)}
+                onFocus={() => {
+                  if (citySuggestions.length > 0) setShowCityDropdown(true);
+                }}
+                className="w-full pl-10 pr-8 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white shadow-xs text-slate-800 placeholder:text-slate-400"
+              />
+              {isSearchingCity && (
+                <Loader2 className="w-3.5 h-3.5 text-amber-600 absolute right-3 top-3 animate-spin" />
+              )}
+            </div>
+
+            {/* City Suggestions Dropdown */}
+            {showCityDropdown && citySuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden max-h-52 overflow-y-auto">
+                {citySuggestions.map((place) => (
+                  <button
+                    key={place.place_id}
+                    type="button"
+                    onClick={() => handleSelectCitySuggestion(place)}
+                    className="w-full text-left px-3.5 py-2.5 hover:bg-amber-50 border-b border-slate-100 last:border-0 transition-colors flex items-center gap-2"
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                    <span className="text-xs font-semibold text-slate-800 line-clamp-1">
+                      {place.display_name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Quick Location & Town Switcher Pills */}
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5 text-xs">
+            <button
+              onClick={() => {
+                setUserLocation({ lat: 9.5100, lng: 78.1000 });
+                setCurrentCityLabel('Aruppukottai');
+                setRadiusKm(25.0);
+                setIsDemoFallback(false);
+              }}
+              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                currentCityLabel === 'Aruppukottai'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <MapPin className="w-3 h-3" />
+              <span>Aruppukottai</span>
+            </button>
+
             <button
               onClick={() => {
                 setUserLocation({ lat: 13.0827, lng: 80.2707 });
+                setCurrentCityLabel('Chennai Central');
+                setRadiusKm(10.0);
                 setIsDemoFallback(false);
               }}
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
-                userLocation.lat === 13.0827 && userLocation.lng === 80.2707
-                  ? 'bg-amber-100 text-amber-900 border border-amber-300 font-bold'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                currentCityLabel === 'Chennai Central'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
               }`}
             >
-              <MapPin className="w-3 h-3 text-amber-600" />
-              <span>Chennai Central (Demo)</span>
+              <MapPin className="w-3 h-3" />
+              <span>Chennai Central</span>
             </button>
+
+            <button
+              onClick={() => {
+                setUserLocation({ lat: 9.9252, lng: 78.1198 });
+                setCurrentCityLabel('Madurai');
+                setRadiusKm(25.0);
+                setIsDemoFallback(false);
+              }}
+              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                currentCityLabel === 'Madurai'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <MapPin className="w-3 h-3" />
+              <span>Madurai</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setRadiusKm(1000.0);
+                setCurrentCityLabel('All Registered Stalls');
+                setIsDemoFallback(false);
+              }}
+              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                radiusKm >= 500
+                  ? 'bg-slate-900 text-white shadow-xs'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <span>Explore All Stalls (State-wide)</span>
+            </button>
+
             <button
               onClick={() => {
                 if (navigator.geolocation) {
                   navigator.geolocation.getCurrentPosition((pos) => {
                     setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                    setCurrentCityLabel('My GPS Location');
                   });
                 }
               }}
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
-                userLocation.lat !== 13.0827 || userLocation.lng !== 80.2707
-                  ? 'bg-amber-100 text-amber-900 border border-amber-300 font-bold'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-              }`}
+              className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition-all"
             >
-              <span>My Current GPS</span>
+              <Navigation className="w-3 h-3 text-amber-600" />
+              <span>My GPS</span>
             </button>
           </div>
 
