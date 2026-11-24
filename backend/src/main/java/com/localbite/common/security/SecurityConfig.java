@@ -77,18 +77,19 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         // Public Endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/shops/nearby", "/api/shops/*", "/api/shops/*/menu").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/plans").permitAll()
-                        .requestMatchers("/api/ws/**").permitAll()
-                        .requestMatchers("/api/payments/webhook").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/shops/**", "/categories/**", "/plans/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/payments/webhook").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         // Role-Based Protection
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/owner/**").hasRole("SHOP_OWNER")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/owner/**").hasRole("SHOP_OWNER")
                         // Everything else requires valid authentication
                         .anyRequest().authenticated()
                 )
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

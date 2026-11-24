@@ -25,6 +25,8 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
 
     Page<Shop> findByVerificationStatus(VerificationStatus status, Pageable pageable);
 
+    List<Shop> findByVerificationStatus(VerificationStatus status);
+
     long countByVerificationStatus(VerificationStatus status);
 
     /**
@@ -32,16 +34,18 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
      * Calculates distance in kilometers and filters within the given radius.
      */
     @Query(value = """
-            SELECT s.*, 
-            (6371 * acos(
-                cos(radians(:userLat)) * cos(radians(s.latitude)) * 
-                cos(radians(s.longitude) - radians(:userLng)) + 
-                sin(radians(:userLat)) * sin(radians(s.latitude))
-            )) AS distance
-            FROM shops s
-            WHERE s.verification_status = 'APPROVED'
-            HAVING distance <= :radiusKm
-            ORDER BY distance ASC
+            SELECT * FROM (
+                SELECT s.*, 
+                (6371 * acos(
+                    cos(radians(:userLat)) * cos(radians(s.latitude)) * 
+                    cos(radians(s.longitude) - radians(:userLng)) + 
+                    sin(radians(:userLat)) * sin(radians(s.latitude))
+                )) AS distance
+                FROM shops s
+                WHERE s.verification_status = 'APPROVED'
+            ) AS nearby
+            WHERE nearby.distance <= :radiusKm
+            ORDER BY nearby.distance ASC
             """, nativeQuery = true)
     List<Shop> findNearbyShops(
             @Param("userLat") double userLat,

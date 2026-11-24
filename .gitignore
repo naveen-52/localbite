@@ -43,3 +43,6 @@ backend/logs/
 # Database Local Dumps
 *.sql
 *.sqlite3
+backend/data/
+*.mv.db
+*.trace.db
