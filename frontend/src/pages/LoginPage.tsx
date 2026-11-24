@@ -39,11 +39,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleQuickFill = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl p-8 max-w-md w-full border border-slate-200 shadow-xl shadow-slate-200/50">
@@ -103,19 +98,6 @@ export const LoginPage: React.FC = () => {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        {/* Demo Accounts Pill for Quick Testing */}
-        <div className="mt-6 pt-6 border-t border-slate-100 text-center">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Demo Quick Login</p>
-          <div className="flex gap-2 justify-center">
-            <button
-              onClick={() => handleQuickFill('admin@localbite.com', 'Admin@123')}
-              className="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-semibold text-slate-700"
-            >
-              Demo Admin
-            </button>
-          </div>
-        </div>
 
         <div className="mt-6 text-center text-xs text-slate-500">
           Don't have an account?{' '}

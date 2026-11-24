@@ -15,8 +15,7 @@ export const HomePage: React.FC = () => {
   const [onlyOpen, setOnlyOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [loading, setLoading] = useState(true);
-  const [isDemoFallback, setIsDemoFallback] = useState(false);
-  const [currentCityLabel, setCurrentCityLabel] = useState('Chennai Central');
+  const [currentCityLabel, setCurrentCityLabel] = useState('My Current GPS');
   const [citySearchInput, setCitySearchInput] = useState('');
   const [citySuggestions, setCitySuggestions] = useState<any[]>([]);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
@@ -24,8 +23,8 @@ export const HomePage: React.FC = () => {
   const citySearchTimeout = useRef<any>(null);
 
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number }>({
-    lat: 13.0827, // Default Chennai coordinates
-    lng: 80.2707,
+    lat: 9.5100, // Default to registered stall region or GPS
+    lng: 78.1000,
   });
 
   useEffect(() => {
@@ -61,19 +60,10 @@ export const HomePage: React.FC = () => {
         setCategories(catRes.data);
       }
 
-      if (shopsRes.success && shopsRes.data && shopsRes.data.length > 0) {
+      if (shopsRes.success && shopsRes.data) {
         setShops(shopsRes.data);
-        setIsDemoFallback(false);
       } else {
-        // If 0 stalls in immediate radius, check for stalls state-wide (radius 1000 km)
-        const allRes = await api.getNearbyShops(userLocation.lat, userLocation.lng, 1000.0);
-        if (allRes.success && allRes.data && allRes.data.length > 0) {
-          setShops(allRes.data);
-          setIsDemoFallback(true);
-        } else {
-          setShops([]);
-          setIsDemoFallback(false);
-        }
+        setShops([]);
       }
     } catch (e) {
       console.error('Failed to fetch nearby shops:', e);
@@ -236,7 +226,6 @@ export const HomePage: React.FC = () => {
                 setUserLocation({ lat: 9.5100, lng: 78.1000 });
                 setCurrentCityLabel('Aruppukottai');
                 setRadiusKm(25.0);
-                setIsDemoFallback(false);
               }}
               className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
                 currentCityLabel === 'Aruppukottai'
@@ -251,18 +240,17 @@ export const HomePage: React.FC = () => {
             <button
               onClick={() => {
                 setUserLocation({ lat: 13.0827, lng: 80.2707 });
-                setCurrentCityLabel('Chennai Central');
-                setRadiusKm(10.0);
-                setIsDemoFallback(false);
+                setCurrentCityLabel('Chennai');
+                setRadiusKm(25.0);
               }}
               className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                currentCityLabel === 'Chennai Central'
+                currentCityLabel === 'Chennai'
                   ? 'bg-amber-600 text-white shadow-xs'
                   : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
               }`}
             >
               <MapPin className="w-3 h-3" />
-              <span>Chennai Central</span>
+              <span>Chennai</span>
             </button>
 
             <button
@@ -270,7 +258,6 @@ export const HomePage: React.FC = () => {
                 setUserLocation({ lat: 9.9252, lng: 78.1198 });
                 setCurrentCityLabel('Madurai');
                 setRadiusKm(25.0);
-                setIsDemoFallback(false);
               }}
               className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
                 currentCityLabel === 'Madurai'
@@ -286,7 +273,6 @@ export const HomePage: React.FC = () => {
               onClick={() => {
                 setRadiusKm(1000.0);
                 setCurrentCityLabel('All Registered Stalls');
-                setIsDemoFallback(false);
               }}
               className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
                 radiusKm >= 500
@@ -346,31 +332,6 @@ export const HomePage: React.FC = () => {
 
       {/* Main Content Area - Full Widescreen Layout */}
       <main className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-8">
-        
-        {/* Demo fallback notice banner */}
-        {isDemoFallback && (
-          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-800 shadow-sm animate-fade-in">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 flex-shrink-0">
-                <MapPin className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-900">
-                  Showing Active Sample Eateries in Park Town, Chennai
-                </p>
-                <p className="text-[11px] text-slate-600">
-                  No registered stalls found within {radiusKm} km of your GPS location. Loaded sample stalls so you can explore real-time availability!
-                </p>
-              </div>
-            </div>
-            <Link
-              to="/register"
-              className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs transition-all shadow-sm flex-shrink-0"
-            >
-              Register a Stall Here
-            </Link>
-          </div>
-        )}
         
         {/* Toggle List View vs Interactive Street Map View */}
         <div className="flex items-center justify-between mb-6">
@@ -436,15 +397,14 @@ export const HomePage: React.FC = () => {
             <div className="mt-5 flex items-center justify-center gap-2">
               <button
                 onClick={() => {
-                  setUserLocation({ lat: 13.0827, lng: 80.2707 });
-                  setRadiusKm(10.0);
+                  setRadiusKm(1000.0);
                   setSelectedCategory('ALL');
                   setOnlyOpen(false);
                 }}
                 className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-rose-500 hover:opacity-90 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5"
               >
                 <MapPin className="w-3.5 h-3.5" />
-                <span>Explore Chennai Stalls (10 km)</span>
+                <span>Explore All Stalls (State-wide)</span>
               </button>
             </div>
           </div>

@@ -293,7 +293,7 @@ export const OwnerDashboard: React.FC = () => {
               <input
                 type="text"
                 required
-                placeholder="e.g. Namma Oru Kulfi, Kumar Mini Tiffin"
+                placeholder="e.g. Namma Ooru Kulfi, Fresh Juice Corner"
                 value={newShopName}
                 onChange={(e) => setNewShopName(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
