@@ -113,9 +113,9 @@ export const SubscriptionPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 py-6 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto">
+      {/* Header - Full Widescreen */}
+      <div className="bg-white border-b border-slate-200 py-6 px-4 sm:px-8 lg:px-12 xl:px-16">
+        <div className="w-full">
           <Link to="/owner/dashboard" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 mb-3">
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Stall Dashboard</span>
@@ -127,11 +127,11 @@ export const SubscriptionPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-8">
         
         {/* Available Plans Grid */}
         <h2 className="text-base font-extrabold text-slate-900 mb-4">Choose Your Plan</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {plans.map((plan) => (
             <div
               key={plan.id}

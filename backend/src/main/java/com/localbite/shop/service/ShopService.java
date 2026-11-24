@@ -202,6 +202,7 @@ public class ShopService {
                     shop.getLatitude(),
                     shop.getLongitude(),
                     shop.getProfileImageUrl(),
+                    shop.getBannerImageUrl(),
                     distance,
                     status.isOpen(),
                     status.getStatusMessage(),

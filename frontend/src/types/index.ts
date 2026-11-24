@@ -48,6 +48,7 @@ export interface NearbyShop {
   latitude: number;
   longitude: number;
   profileImageUrl?: string;
+  bannerImageUrl?: string;
   distanceKm: number;
   open: boolean;
   statusMessage: string;

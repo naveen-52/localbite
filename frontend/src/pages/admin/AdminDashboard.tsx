@@ -82,9 +82,9 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       
-      {/* Top Banner */}
-      <div className="bg-slate-900 text-white py-8 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
+      {/* Top Banner - Full Widescreen */}
+      <div className="bg-slate-900 text-white py-8 px-4 sm:px-8 lg:px-12 xl:px-16">
+        <div className="w-full flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-6 h-6 text-rose-400" />
@@ -100,7 +100,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+      <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-8 space-y-8">
         
         {/* Metric Summary Cards */}
         {stats && (

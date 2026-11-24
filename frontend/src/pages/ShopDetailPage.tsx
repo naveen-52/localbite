@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { AvailabilitySocketClient } from '../services/websocket';
 import type { FoodItem, ShopDetail, AvailabilityEvent } from '../types';
-import { ArrowLeft, Clock, MapPin, Phone, Radio, Sparkles, Utensils } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, Phone, Radio, Sparkles, Utensils, Store } from 'lucide-react';
 
 export const ShopDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -96,7 +96,7 @@ export const ShopDetailPage: React.FC = () => {
       
       {/* Top Banner Navigation */}
       <div className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-4 flex items-center justify-between">
           <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900">
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Discovery</span>
@@ -118,17 +118,40 @@ export const ShopDetailPage: React.FC = () => {
         </div>
       )}
 
-      {/* Stall Hero Profile */}
-      <div className="bg-white border-b border-slate-200 py-8 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+      {/* Stall Hero Profile - Full Widescreen with Banner */}
+      <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-6">
+        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs">
+          {/* Real Stall Photo Banner if available */}
+          {(shop.bannerImageUrl || shop.profileImageUrl) && (
+            <div className="h-56 sm:h-72 w-full relative bg-slate-900 overflow-hidden">
+              <img
+                src={shop.bannerImageUrl || shop.profileImageUrl}
+                alt={shop.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute bottom-4 left-6 right-6 flex items-end justify-between">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-white/95 text-slate-800 shadow-md">
+                  <Store className="w-3.5 h-3.5 text-amber-600" />
+                  <span>{shop.categoryName}</span>
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="p-6 sm:p-8 flex flex-col sm:flex-row sm:items-start justify-between gap-6">
             <div>
-              <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
-                {shop.categoryName}
-              </span>
+              {!(shop.bannerImageUrl || shop.profileImageUrl) && (
+                <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">
+                  {shop.categoryName}
+                </span>
+              )}
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
                 {shop.name}
               </h1>
+              {shop.description && (
+                <p className="text-sm text-slate-600 mt-1 max-w-2xl">{shop.description}</p>
+              )}
               <p className="text-sm text-slate-500 flex items-center gap-1.5 mt-2">
                 <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
                 <span>{shop.addressLine}, {shop.city} - {shop.postalCode}</span>
@@ -142,7 +165,7 @@ export const ShopDetailPage: React.FC = () => {
             </div>
 
             {/* Operating Status Badge */}
-            <div className="sm:text-right">
+            <div className="sm:text-right flex-shrink-0">
               <span
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm ${
                   shop.statusInfo.open
@@ -161,13 +184,16 @@ export const ShopDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Live Menu & Availability Catalog */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Live Menu & Availability Catalog - Full Widescreen Grid */}
+      <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-4">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Food Varieties & Live Availability</h2>
+            <h2 className="text-xl font-bold text-slate-900">Food Varieties & Live Availability</h2>
             <p className="text-xs text-slate-500">Inventory states update automatically via live WebSocket push.</p>
           </div>
+          <span className="text-xs font-bold bg-amber-100 text-amber-800 px-3 py-1 rounded-full">
+            {menu.length} Varieties Listed
+          </span>
         </div>
 
         {menu.length === 0 ? (
@@ -175,7 +201,7 @@ export const ShopDetailPage: React.FC = () => {
             <p className="text-sm font-semibold text-slate-600">The shop owner has not published any food items yet.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {menu.map((dish) => {
               const isAvailable = dish.availabilityStatus === 'AVAILABLE';
               const isLimited = dish.availabilityStatus === 'LIMITED';

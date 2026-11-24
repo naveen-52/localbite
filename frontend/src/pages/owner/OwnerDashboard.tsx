@@ -23,6 +23,7 @@ import { Link } from 'react-router-dom';
 import { ShopQrModal } from '../../components/ShopQrModal';
 import { LocationPickerMap } from '../../components/LocationPickerMap';
 import { DishPhotoPicker } from '../../components/DishPhotoPicker';
+import { StallPhotoPicker } from '../../components/StallPhotoPicker';
 import { getStallTheme } from '../../utils/stallThemes';
 
 export const OwnerDashboard: React.FC = () => {
@@ -45,6 +46,7 @@ export const OwnerDashboard: React.FC = () => {
   const [newShopPostal, setNewShopPostal] = useState('600001');
   const [newShopLat, setNewShopLat] = useState(13.0827);
   const [newShopLng, setNewShopLng] = useState(80.2707);
+  const [newShopBannerUrl, setNewShopBannerUrl] = useState('');
 
   // Edit Stall State
   const [editName, setEditName] = useState('');
@@ -56,6 +58,7 @@ export const OwnerDashboard: React.FC = () => {
   const [editPostal, setEditPostal] = useState('');
   const [editLat, setEditLat] = useState(13.0827);
   const [editLng, setEditLng] = useState(80.2707);
+  const [editBannerUrl, setEditBannerUrl] = useState('');
 
   // Add Item Form State
   const [itemName, setItemName] = useState('');
@@ -91,6 +94,7 @@ export const OwnerDashboard: React.FC = () => {
         setEditPostal(s.postalCode);
         setEditLat(s.latitude);
         setEditLng(s.longitude);
+        setEditBannerUrl(s.bannerImageUrl || s.profileImageUrl || '');
 
         const menuRes = await api.getShopMenu(s.id);
         if (menuRes.success && menuRes.data) {
@@ -146,6 +150,8 @@ export const OwnerDashboard: React.FC = () => {
         postalCode: newShopPostal,
         latitude: newShopLat,
         longitude: newShopLng,
+        bannerImageUrl: newShopBannerUrl,
+        profileImageUrl: newShopBannerUrl,
       };
       const res = await api.createShop(payload);
       if (res.success && res.data) {
@@ -173,6 +179,8 @@ export const OwnerDashboard: React.FC = () => {
         postalCode: editPostal,
         latitude: editLat,
         longitude: editLng,
+        bannerImageUrl: editBannerUrl,
+        profileImageUrl: editBannerUrl,
       };
       const res = await api.updateShop(payload);
       if (res.success && res.data) {
@@ -265,7 +273,7 @@ export const OwnerDashboard: React.FC = () => {
   // 1. View when vendor hasn't created a shop profile yet (Map + Place/Landmark Based)
   if (!shop) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-10">
+      <div className="max-w-3xl mx-auto px-4 py-10">
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xl shadow-slate-200/50">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20">
@@ -273,7 +281,7 @@ export const OwnerDashboard: React.FC = () => {
             </div>
             <div>
               <h1 className="text-xl font-black text-slate-900">Register Your Roadside Stall</h1>
-              <p className="text-xs text-slate-500">Pin your stall on the street map in 2 minutes.</p>
+              <p className="text-xs text-slate-500">Add your stall photo, pin on the map, and start broadcasting live availability.</p>
             </div>
           </div>
 
@@ -307,6 +315,16 @@ export const OwnerDashboard: React.FC = () => {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Stall Photo / Banner Picker */}
+            <div className="pt-2 pb-1 border-t border-slate-100">
+              <StallPhotoPicker
+                value={newShopBannerUrl}
+                onChange={setNewShopBannerUrl}
+                label="Stall Front / Cart Photo"
+                categoryHint={categories.find((c) => c.id === newShopCategory)?.name}
+              />
             </div>
 
             <div>
@@ -430,45 +448,65 @@ export const OwnerDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 relative z-10">
+        <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-8 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              {/* Category Pill with Theme Emojis */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-white/90 shadow-xs border border-amber-200 mb-3 text-slate-800">
-                <span className="text-base">{theme.floatingEmojis[0]}</span>
-                <span>{shop.categoryName}</span>
-                <span className="text-amber-500 font-normal">|</span>
-                <span className="text-slate-500 normal-case font-medium">
-                  {theme.themeTitle}
-                </span>
-              </div>
+            <div className="flex items-start gap-4">
+              {/* Stall Banner / Profile Avatar Thumbnail */}
+              {(shop.bannerImageUrl || shop.profileImageUrl) && (
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-900 border-2 border-white shadow-lg flex-shrink-0 relative group">
+                  <img
+                    src={shop.bannerImageUrl || shop.profileImageUrl}
+                    alt={shop.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowEditShopModal(true)}
+                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[10px] font-bold text-white cursor-pointer"
+                  >
+                    Edit Photo
+                  </button>
+                </div>
+              )}
 
-              {/* Stall Name */}
-              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
-                {shop.name}
-              </h1>
-
-              {/* Theme Motto */}
-              <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
-                {theme.bannerMotto}
-              </p>
-
-              {/* Address & Hours */}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-xs text-slate-700">
-                <span className="flex items-center gap-1 font-semibold">
-                  <MapPin className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-                  <span>
-                    {shop.addressLine}, {shop.city}
+              <div>
+                {/* Category Pill with Theme Emojis */}
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-white/90 shadow-xs border border-amber-200 mb-2 text-slate-800">
+                  <span className="text-base">{theme.floatingEmojis[0]}</span>
+                  <span>{shop.categoryName}</span>
+                  <span className="text-amber-500 font-normal">|</span>
+                  <span className="text-slate-500 normal-case font-medium">
+                    {theme.themeTitle}
                   </span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-                  <span>{shop.phoneNumber}</span>
-                </span>
-                <span className="flex items-center gap-1 text-emerald-700 font-semibold">
-                  <Clock className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                  <span>{shop.statusInfo.statusMessage}</span>
-                </span>
+                </div>
+
+                {/* Stall Name */}
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                  {shop.name}
+                </h1>
+
+                {/* Theme Motto */}
+                <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+                  {theme.bannerMotto}
+                </p>
+
+                {/* Address & Hours */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5 text-xs text-slate-700">
+                  <span className="flex items-center gap-1 font-semibold">
+                    <MapPin className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                    <span>
+                      {shop.addressLine}, {shop.city}
+                    </span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                    <span>{shop.phoneNumber}</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-emerald-700 font-semibold">
+                    <Clock className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                    <span>{shop.statusInfo.statusMessage}</span>
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -558,8 +596,8 @@ export const OwnerDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Vendor Touch Inventory Container */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      {/* Main Vendor Touch Inventory Container - Full Widescreen Layout */}
+      <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <div>
             <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
@@ -580,7 +618,7 @@ export const OwnerDashboard: React.FC = () => {
           </button>
         </div>
 
-        {/* 3-Tap Availability Grid with Dish Photos */}
+        {/* 3-Tap Availability Grid with Dish Photos - 2-Column Responsive Layout */}
         {menu.length === 0 ? (
           <div className="text-center py-16 bg-white/80 backdrop-blur-xs rounded-3xl border border-dashed border-slate-300 p-6">
             <Utensils className="w-12 h-12 text-slate-300 mx-auto mb-3" />
@@ -596,7 +634,7 @@ export const OwnerDashboard: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="space-y-3.5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {menu.map((dish) => {
               const isAvail = dish.availabilityStatus === 'AVAILABLE';
               const isLimit = dish.availabilityStatus === 'LIMITED';
@@ -807,7 +845,7 @@ export const OwnerDashboard: React.FC = () => {
       {/* Edit Stall Information & Theme Modal */}
       {showEditShopModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 my-8">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 my-8">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div className="flex items-center gap-2">
                 <Edit3 className="w-5 h-5 text-amber-600" />
@@ -853,6 +891,16 @@ export const OwnerDashboard: React.FC = () => {
                 <p className="text-[11px] text-slate-500 mt-1">
                   💡 Changing your category updates your dashboard theme (e.g. Fresh Fruits, Tea & Coffee, or Tiffin Cart).
                 </p>
+              </div>
+
+              {/* Stall Banner / Shop Front Photo */}
+              <div className="pt-2 pb-1 border-t border-slate-100">
+                <StallPhotoPicker
+                  value={editBannerUrl}
+                  onChange={setEditBannerUrl}
+                  label="Stall Front / Banner Photo"
+                  categoryHint={categories.find((c) => c.id === editCategoryId)?.name}
+                />
               </div>
 
               <div>

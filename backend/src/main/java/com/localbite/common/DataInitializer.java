@@ -69,10 +69,28 @@ public class DataInitializer implements CommandLineRunner {
             log.info("Database already seeded. Ensuring all categories exist.");
             // Auto-approve any pending stalls in development so they immediately appear on customer map
             shopRepository.findAll().forEach(s -> {
+                boolean changed = false;
                 if (s.getVerificationStatus() == VerificationStatus.PENDING) {
                     s.setVerificationStatus(VerificationStatus.APPROVED);
-                    shopRepository.save(s);
+                    changed = true;
                     log.info("Auto-approved stall: {} ({})", s.getName(), s.getCity());
+                }
+                if (s.getBannerImageUrl() == null || s.getBannerImageUrl().isBlank()) {
+                    String name = s.getName().toLowerCase();
+                    if (name.contains("kulfi") || name.contains("ice")) {
+                        s.setBannerImageUrl("https://images.unsplash.com/photo-1579954115545-a95591f28bfc?w=800&auto=format&fit=crop&q=80");
+                    } else if (name.contains("juice") || name.contains("shake")) {
+                        s.setBannerImageUrl("https://images.unsplash.com/photo-1613478223719-2ab802602423?w=800&auto=format&fit=crop&q=80");
+                    } else if (name.contains("tea") || name.contains("chai") || name.contains("coffee")) {
+                        s.setBannerImageUrl("https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80");
+                    } else {
+                        s.setBannerImageUrl("https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=800&auto=format&fit=crop&q=80");
+                    }
+                    changed = true;
+                    log.info("Assigned default banner to stall: {}", s.getName());
+                }
+                if (changed) {
+                    shopRepository.save(s);
                 }
             });
             return;
@@ -126,6 +144,8 @@ public class DataInitializer implements CommandLineRunner {
                 .postalCode("600003")
                 .latitude(BigDecimal.valueOf(13.0827))
                 .longitude(BigDecimal.valueOf(80.2707))
+                .bannerImageUrl("https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=800&auto=format&fit=crop&q=80")
+                .profileImageUrl("https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=800&auto=format&fit=crop&q=80")
                 .verificationStatus(VerificationStatus.APPROVED)
                 .temporarilyClosed(false)
                 .build();

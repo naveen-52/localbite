@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import type { NearbyShop, ShopCategory } from '../types';
 import { ShopMapView } from '../components/ShopMapView';
 import { Search, MapPin, Clock, Utensils, CheckCircle2, ChevronRight, SlidersHorizontal, Map as MapIcon, List as ListIcon, Loader2, Navigation } from 'lucide-react';
+import { getCategoryDefaultBanner } from '../components/StallPhotoPicker';
 
 export const HomePage: React.FC = () => {
   const [shops, setShops] = useState<NearbyShop[]>([]);
@@ -133,9 +134,9 @@ export const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50">
       
-      {/* Hero Search Section */}
-      <div className="bg-gradient-to-b from-amber-50 via-white to-slate-50 border-b border-slate-200 py-10 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
+      {/* Hero Search Section - Expanded Widescreen */}
+      <div className="bg-gradient-to-b from-amber-50 via-white to-slate-50 border-b border-slate-200 py-10 px-4 sm:px-8 lg:px-12 xl:px-16">
+        <div className="w-full text-center">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200 mb-4">
             <Utensils className="w-3.5 h-3.5" />
             Hyper-Local Street Food Availability
@@ -143,12 +144,12 @@ export const HomePage: React.FC = () => {
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
             Check what's <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-rose-600">Hot & Available</span> before you walk over.
           </h1>
-          <p className="mt-3 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="mt-3 text-base sm:text-lg text-slate-600 max-w-3xl mx-auto">
             Real-time live inventory from nearby tea stalls, tiffin centers, and roadside eateries.
           </p>
 
           {/* Search & Radius Filter Box */}
-          <div className="mt-8 bg-white p-2.5 rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-200 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto">
+          <div className="mt-8 bg-white p-2.5 rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-200 flex flex-col sm:flex-row gap-2 max-w-3xl mx-auto">
             <div className="relative flex-1 flex items-center">
               <Search className="w-5 h-5 text-slate-400 absolute left-3.5" />
               <input
@@ -343,8 +344,8 @@ export const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Content Area - Full Widescreen Layout */}
+      <main className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-8">
         
         {/* Demo fallback notice banner */}
         {isDemoFallback && (
@@ -414,10 +415,10 @@ export const HomePage: React.FC = () => {
             radiusKm={radiusKm}
           />
         ) : loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => (
               <div key={i} className="bg-white rounded-2xl p-5 border border-slate-200 animate-pulse space-y-3">
-                <div className="h-32 bg-slate-100 rounded-xl" />
+                <div className="h-44 bg-slate-100 rounded-xl" />
                 <div className="h-5 bg-slate-100 rounded w-3/4" />
                 <div className="h-4 bg-slate-100 rounded w-1/2" />
               </div>
@@ -448,30 +449,41 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {filteredShops.map((shop) => (
               <Link
                 key={shop.id}
                 to={`/shops/${shop.slug}`}
-                className="group bg-white rounded-2xl border border-slate-200 hover:border-amber-400 hover:shadow-xl hover:shadow-amber-500/5 transition-all overflow-hidden flex flex-col"
+                className="group bg-white rounded-2xl border border-slate-200 hover:border-amber-400 hover:shadow-xl hover:shadow-amber-500/10 transition-all overflow-hidden flex flex-col"
               >
-                {/* Stall Header / Banner */}
-                <div className="h-36 bg-gradient-to-tr from-amber-100 to-rose-100 relative p-4 flex items-start justify-between">
-                  <span
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-sm ${
-                      shop.open
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-rose-600 text-white'
-                    }`}
-                  >
-                    <Clock className="w-3 h-3" />
-                    {shop.open ? 'OPEN NOW' : 'CLOSED'}
-                  </span>
+                {/* Stall Header / Banner Photo */}
+                <div className="h-44 relative overflow-hidden bg-slate-900">
+                  <img
+                    src={shop.bannerImageUrl || shop.profileImageUrl || getCategoryDefaultBanner(shop.categoryName)}
+                    alt={shop.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
 
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/90 backdrop-blur-sm text-slate-800 shadow-sm border border-slate-200/50">
-                    <MapPin className="w-3 h-3 text-amber-600" />
-                    {shop.distanceKm} km away
-                  </span>
+                  {/* Gradient Overlay for Readable Badges */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/30 pointer-events-none" />
+
+                  <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+                    <span
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-md ${
+                        shop.open
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-rose-600 text-white'
+                      }`}
+                    >
+                      <Clock className="w-3 h-3" />
+                      {shop.open ? 'OPEN NOW' : 'CLOSED'}
+                    </span>
+
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/95 text-slate-800 shadow-md">
+                      <MapPin className="w-3 h-3 text-amber-600" />
+                      {shop.distanceKm} km away
+                    </span>
+                  </div>
                 </div>
 
                 {/* Stall Content */}

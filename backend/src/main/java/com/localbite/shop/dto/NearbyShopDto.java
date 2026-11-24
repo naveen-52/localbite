@@ -11,6 +11,7 @@ public class NearbyShopDto {
     private BigDecimal latitude;
     private BigDecimal longitude;
     private String profileImageUrl;
+    private String bannerImageUrl;
     private double distanceKm;
     private boolean open;
     private String statusMessage;
@@ -20,6 +21,10 @@ public class NearbyShopDto {
     }
 
     public NearbyShopDto(Long id, String name, String slug, String categoryName, String addressLine, BigDecimal latitude, BigDecimal longitude, String profileImageUrl, double distanceKm, boolean open, String statusMessage, int availableItemCount) {
+        this(id, name, slug, categoryName, addressLine, latitude, longitude, profileImageUrl, null, distanceKm, open, statusMessage, availableItemCount);
+    }
+
+    public NearbyShopDto(Long id, String name, String slug, String categoryName, String addressLine, BigDecimal latitude, BigDecimal longitude, String profileImageUrl, String bannerImageUrl, double distanceKm, boolean open, String statusMessage, int availableItemCount) {
         this.id = id;
         this.name = name;
         this.slug = slug;
@@ -28,6 +33,7 @@ public class NearbyShopDto {
         this.latitude = latitude;
         this.longitude = longitude;
         this.profileImageUrl = profileImageUrl;
+        this.bannerImageUrl = bannerImageUrl;
         this.distanceKm = Math.round(distanceKm * 10.0) / 10.0;
         this.open = open;
         this.statusMessage = statusMessage;
@@ -64,6 +70,14 @@ public class NearbyShopDto {
 
     public String getProfileImageUrl() {
         return profileImageUrl;
+    }
+
+    public String getBannerImageUrl() {
+        return bannerImageUrl;
+    }
+
+    public void setBannerImageUrl(String bannerImageUrl) {
+        this.bannerImageUrl = bannerImageUrl;
     }
 
     public double getDistanceKm() {

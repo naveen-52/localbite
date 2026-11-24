@@ -52,10 +52,10 @@ public class Shop {
     @Column(nullable = false, precision = 11, scale = 8)
     private BigDecimal longitude;
 
-    @Column(name = "banner_image_url", length = 500)
+    @Column(name = "banner_image_url", columnDefinition = "TEXT")
     private String bannerImageUrl;
 
-    @Column(name = "profile_image_url", length = 500)
+    @Column(name = "profile_image_url", columnDefinition = "TEXT")
     private String profileImageUrl;
 
     @Enumerated(EnumType.STRING)
