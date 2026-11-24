@@ -103,8 +103,15 @@ public class ShopService {
 
     @Transactional(readOnly = true)
     public ShopDetailDto getShopBySlug(String slug) {
-        Shop shop = shopRepository.findBySlug(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("Shop", "slug", slug));
+        Shop shop;
+        if (slug != null && slug.matches("^\\d+$")) {
+            long id = Long.parseLong(slug);
+            shop = shopRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Shop", "id", id));
+        } else {
+            shop = shopRepository.findBySlug(slug)
+                    .orElseThrow(() -> new ResourceNotFoundException("Shop", "slug", slug));
+        }
 
         ShopStatusDto status = timingService.computeShopStatus(shop);
         return ShopDetailDto.fromEntity(shop, status);
