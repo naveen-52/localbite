@@ -63,8 +63,10 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        ensureAllCategoriesExist();
+
         if (userRepository.count() > 0) {
-            log.info("Database already seeded. Skipping initial data population.");
+            log.info("Database already seeded. Ensuring all categories exist.");
             return;
         }
 
@@ -81,13 +83,9 @@ public class DataInitializer implements CommandLineRunner {
                 .build();
         userRepository.save(admin);
 
-        // 2. Seed Shop Categories
-        ShopCategory teaCat = categoryRepository.save(new ShopCategory(null, "Tea & Coffee Stall", "tea-coffee-stall", "Coffee", 1, true));
-        ShopCategory tiffinCat = categoryRepository.save(new ShopCategory(null, "Tiffin & Breakfast", "tiffin-breakfast", "Utensils", 2, true));
-        categoryRepository.save(new ShopCategory(null, "Chaat & Street Snacks", "chaat-street-snacks", "Sparkles", 3, true));
-        categoryRepository.save(new ShopCategory(null, "Fresh Juices & Shakes", "fresh-juices-shakes", "Citrus", 4, true));
-        categoryRepository.save(new ShopCategory(null, "Fast Food & Sandwiches", "fast-food-sandwiches", "Sandwich", 5, true));
-        categoryRepository.save(new ShopCategory(null, "Sweet & Savory Bakery", "sweet-savory-bakery", "Cake", 6, true));
+        // 2. Fetch seeded categories
+        ShopCategory teaCat = categoryRepository.findBySlug("tea-coffee-stall").orElse(null);
+        ShopCategory tiffinCat = categoryRepository.findBySlug("tiffin-breakfast").orElse(null);
 
         // 3. Seed Subscription Plans
         planRepository.save(new SubscriptionPlan(null, "One-Time Shop Registration Fee", PlanType.REGISTRATION_FEE, BillingInterval.ONE_TIME, 3650, BigDecimal.valueOf(199.00), "Standard onboarding and physical verification fee for stall owners", true));
@@ -251,5 +249,27 @@ public class DataInitializer implements CommandLineRunner {
                 .build());
 
         log.info("Platform seed data initialized successfully! Admin: admin@localbite.com | Shop: kumar@example.com");
+    }
+
+    private void ensureAllCategoriesExist() {
+        createCategoryIfMissing("Tea & Coffee Stall", "tea-coffee-stall", "Coffee", 1);
+        createCategoryIfMissing("Tiffin & Breakfast", "tiffin-breakfast", "Utensils", 2);
+        createCategoryIfMissing("Fresh Juices & Shakes", "fresh-juices-shakes", "Citrus", 3);
+        createCategoryIfMissing("Kulfi & Ice Creams", "kulfi-ice-creams", "IceCream", 4);
+        createCategoryIfMissing("Chaat & Street Snacks", "chaat-street-snacks", "Sparkles", 5);
+        createCategoryIfMissing("Evening Snacks (Bajji, Vada)", "evening-snacks", "Flame", 6);
+        createCategoryIfMissing("Street Biryani & Parotta", "biryani-parotta", "Drumstick", 7);
+        createCategoryIfMissing("Fast Food & Sandwiches", "fast-food-sandwiches", "Sandwich", 8);
+        createCategoryIfMissing("Sweet & Savory Bakery", "sweet-savory-bakery", "Cake", 9);
+        createCategoryIfMissing("Tender Coconut & Fruits", "coconut-fresh-fruits", "Apple", 10);
+        createCategoryIfMissing("Soup & Herbal Drinks", "soup-herbal", "Soup", 11);
+        createCategoryIfMissing("Paan & Refreshments", "paan-refreshments", "Leaf", 12);
+    }
+
+    private void createCategoryIfMissing(String name, String slug, String icon, int order) {
+        if (categoryRepository.findBySlug(slug).isEmpty()) {
+            categoryRepository.save(new ShopCategory(null, name, slug, icon, order, true));
+            log.info("Seeded mini eatery category: {} ({})", name, slug);
+        }
     }
 }

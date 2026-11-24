@@ -72,6 +72,10 @@ export const api = {
     const res = await apiClient.post<ApiResponse<ShopDetail>>('/shops', shopData);
     return res.data;
   },
+  updateShop: async (shopData: any) => {
+    const res = await apiClient.put<ApiResponse<ShopDetail>>('/owner/my-shop', shopData);
+    return res.data;
+  },
   toggleShopClosure: async (closed: boolean, reason?: string) => {
     const res = await apiClient.patch<ApiResponse<ShopDetail>>('/owner/my-shop/closure', { closed, reason });
     return res.data;

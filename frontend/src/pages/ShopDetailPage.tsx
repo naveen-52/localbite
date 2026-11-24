@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { AvailabilitySocketClient } from '../services/websocket';
 import type { FoodItem, ShopDetail, AvailabilityEvent } from '../types';
-import { ArrowLeft, Clock, MapPin, Phone, Radio, Sparkles } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, Phone, Radio, Sparkles, Utensils } from 'lucide-react';
 
 export const ShopDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -184,51 +184,69 @@ export const ShopDetailPage: React.FC = () => {
               return (
                 <div
                   key={dish.id}
-                  className={`bg-white rounded-2xl p-5 border transition-all ${
+                  className={`bg-white rounded-2xl p-4 sm:p-5 border transition-all flex flex-col justify-between ${
                     isSoldOut
                       ? 'border-slate-200 opacity-60 bg-slate-50'
-                      : 'border-slate-200 shadow-sm hover:border-amber-300'
+                      : 'border-slate-200 shadow-sm hover:border-amber-300 hover:shadow-md'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="flex items-baseline gap-2">
-                        <h3 className="font-bold text-slate-900 text-base">{dish.name}</h3>
-                        {dish.regionalName && (
-                          <span className="text-xs text-slate-500 font-medium font-sans">
-                            ({dish.regionalName})
-                          </span>
-                        )}
+                  <div className="flex items-start gap-3.5">
+                    {dish.imageUrl ? (
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-100 shadow-inner">
+                        <img
+                          src={dish.imageUrl}
+                          alt={dish.name}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform"
+                        />
                       </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+                        <Utensils className="w-6 h-6" />
+                      </div>
+                    )}
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-base leading-tight">{dish.name}</h3>
+                          {dish.regionalName && (
+                            <span className="text-xs text-slate-500 font-medium block mt-0.5">
+                              {dish.regionalName}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* High-Contrast Live Availability Indicator */}
+                        <div className="flex flex-col items-end flex-shrink-0">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider shadow-xs ${
+                              isAvailable
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                : isLimited
+                                ? 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse'
+                                : 'bg-rose-100 text-rose-800 border border-rose-300'
+                            }`}
+                          >
+                            {isAvailable && 'Available'}
+                            {isLimited && 'Limited'}
+                            {isSoldOut && 'Sold Out'}
+                          </span>
+
+                          {dish.quantityTracked && isLimited && dish.currentQuantity > 0 && (
+                            <span className="text-[10px] font-bold text-amber-700 mt-1">
+                              Only {dish.currentQuantity} left!
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
                       {dish.description && (
                         <p className="text-xs text-slate-500 mt-1 line-clamp-2">{dish.description}</p>
                       )}
-                      <p className="text-base font-extrabold text-slate-900 mt-3">
+
+                      <p className="text-base font-extrabold text-slate-900 mt-2">
                         ₹{dish.price.toFixed(2)}
                       </p>
-                    </div>
-
-                    {/* High-Contrast Live Availability Indicator */}
-                    <div className="flex flex-col items-end">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${
-                          isAvailable
-                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                            : isLimited
-                            ? 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse'
-                            : 'bg-rose-100 text-rose-800 border border-rose-300'
-                        }`}
-                      >
-                        {isAvailable && 'Available'}
-                        {isLimited && 'Limited Stock'}
-                        {isSoldOut && 'Sold Out'}
-                      </span>
-
-                      {dish.quantityTracked && isLimited && dish.currentQuantity > 0 && (
-                        <span className="text-[10px] font-bold text-amber-700 mt-1">
-                          Only {dish.currentQuantity} left!
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>

@@ -101,6 +101,61 @@ public class ShopService {
         return ShopDetailDto.fromEntity(savedShop, status);
     }
 
+    @Transactional
+    public ShopDetailDto updateShop(Long shopId, CreateShopRequest request, Long ownerId) {
+        Shop shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new ResourceNotFoundException("Shop", "id", shopId));
+
+        if (!shop.getOwnerId().equals(ownerId)) {
+            throw new UnauthorizedException("You do not have permission to update this shop.");
+        }
+
+        if (request.getCategoryId() != null) {
+            ShopCategory category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("ShopCategory", "id", request.getCategoryId()));
+            shop.setCategory(category);
+        }
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            shop.setName(request.getName().trim());
+        }
+        if (request.getDescription() != null) {
+            shop.setDescription(request.getDescription().trim());
+        }
+        if (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank()) {
+            shop.setPhoneNumber(request.getPhoneNumber().trim());
+        }
+        if (request.getAddressLine() != null && !request.getAddressLine().isBlank()) {
+            shop.setAddressLine(request.getAddressLine().trim());
+        }
+        if (request.getCity() != null && !request.getCity().isBlank()) {
+            shop.setCity(request.getCity().trim());
+        }
+        if (request.getState() != null && !request.getState().isBlank()) {
+            shop.setState(request.getState().trim());
+        }
+        if (request.getPostalCode() != null && !request.getPostalCode().isBlank()) {
+            shop.setPostalCode(request.getPostalCode().trim());
+        }
+        if (request.getLatitude() != null) {
+            shop.setLatitude(request.getLatitude());
+        }
+        if (request.getLongitude() != null) {
+            shop.setLongitude(request.getLongitude());
+        }
+        if (request.getBannerImageUrl() != null) {
+            shop.setBannerImageUrl(request.getBannerImageUrl());
+        }
+        if (request.getProfileImageUrl() != null) {
+            shop.setProfileImageUrl(request.getProfileImageUrl());
+        }
+
+        Shop saved = shopRepository.save(shop);
+        ShopStatusDto status = timingService.computeShopStatus(saved);
+        log.info("Updated shop id={} name={} category={}", saved.getId(), saved.getName(), saved.getCategory().getName());
+        return ShopDetailDto.fromEntity(saved, status);
+    }
+
     @Transactional(readOnly = true)
     public ShopDetailDto getShopBySlug(String slug) {
         Shop shop;

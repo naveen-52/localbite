@@ -69,6 +69,16 @@ public class ShopController {
         return ResponseEntity.ok(ApiResponse.success(shop, "Owner shop retrieved successfully"));
     }
 
+    @PutMapping("/owner/my-shop")
+    @PreAuthorize("hasRole('SHOP_OWNER')")
+    public ResponseEntity<ApiResponse<ShopDetailDto>> updateMyShop(
+            @Valid @RequestBody CreateShopRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        ShopDetailDto myShop = shopService.getShopByOwnerId(currentUser.getId());
+        ShopDetailDto updated = shopService.updateShop(myShop.getId(), request, currentUser.getId());
+        return ResponseEntity.ok(ApiResponse.success(updated, "Shop details updated successfully"));
+    }
+
     @PatchMapping("/owner/my-shop/closure")
     @PreAuthorize("hasRole('SHOP_OWNER')")
     public ResponseEntity<ApiResponse<ShopDetailDto>> toggleTemporaryClosure(
