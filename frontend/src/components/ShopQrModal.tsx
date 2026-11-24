@@ -85,6 +85,8 @@ export const ShopQrModal: React.FC<ShopQrModalProps> = ({ shop, onClose }) => {
         {/* Printable Standee Card */}
         <div ref={printAreaRef} className="p-8 text-center bg-gradient-to-b from-amber-50/50 via-white to-amber-50/30">
           
+          <img src="/logo.png" alt="LocalBite" className="h-14 w-auto mx-auto mb-2 object-contain" />
+
           <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-extrabold bg-amber-500 text-white shadow-sm mb-3">
             <Sparkles className="w-3.5 h-3.5" />
             <span>LocalBite Live Menu Radar</span>

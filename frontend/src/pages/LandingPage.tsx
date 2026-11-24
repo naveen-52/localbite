@@ -521,14 +521,13 @@ export const LandingPage: React.FC = () => {
       <footer className="mt-auto bg-slate-900 text-slate-400 py-12 px-4 sm:px-8 lg:px-12 xl:px-16 border-t border-slate-800 text-xs">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8 pb-10 border-b border-slate-800">
           <div>
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white shadow-md">
-                <Utensils className="w-4 h-4" />
-              </div>
-              <span className="font-extrabold text-xl tracking-tight text-white">
-                Local<span className="text-amber-500">Bite</span>
-              </span>
-            </div>
+            <Link to="/" className="inline-block bg-white p-2 rounded-2xl shadow-sm hover:scale-105 transition-transform">
+              <img
+                src="/logo.png"
+                alt="LocalBite"
+                className="h-12 w-auto object-contain"
+              />
+            </Link>
             <p className="mt-3 text-slate-400 max-w-sm text-xs leading-relaxed">
               Hyper-local street food discovery &amp; live availability broadcast platform. Helping people find authentic food and helping vendors advertise their stalls.
             </p>

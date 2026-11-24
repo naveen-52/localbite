@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Utensils, Lock, Mail, ArrowRight } from 'lucide-react';
+import { Lock, Mail, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -45,9 +45,9 @@ export const LoginPage: React.FC = () => {
         
         {/* Brand Header */}
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white mx-auto mb-3 shadow-md">
-            <Utensils className="w-6 h-6" />
-          </div>
+          <Link to="/" className="inline-block hover:scale-105 transition-transform mb-2">
+            <img src="/logo.png" alt="LocalBite" className="h-16 w-auto mx-auto object-contain" />
+          </Link>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Sign In to LocalBite</h1>
           <p className="text-xs text-slate-500 mt-1">Access your stall dashboard, orders or favorites</p>
         </div>

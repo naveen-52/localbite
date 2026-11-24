@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import type { Role } from '../types';
-import { Utensils, Lock, Mail, User, Phone, Store, UserCheck, ArrowRight } from 'lucide-react';
+import { Lock, Mail, User, Phone, Store, UserCheck, ArrowRight } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
   const { register } = useAuth();
@@ -49,9 +49,9 @@ export const RegisterPage: React.FC = () => {
       <div className="bg-white rounded-3xl p-8 max-w-md w-full border border-slate-200 shadow-xl shadow-slate-200/50">
         
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white mx-auto mb-3 shadow-md">
-            <Utensils className="w-6 h-6" />
-          </div>
+          <Link to="/" className="inline-block hover:scale-105 transition-transform mb-2">
+            <img src="/logo.png" alt="LocalBite" className="h-16 w-auto mx-auto object-contain" />
+          </Link>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Create LocalBite Account</h1>
           <p className="text-xs text-slate-500 mt-1">Select your role to get started</p>
         </div>

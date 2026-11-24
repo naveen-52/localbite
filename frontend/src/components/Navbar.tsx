@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Store, Utensils, LogOut, User as UserIcon, ShieldAlert } from 'lucide-react';
+import { Store, LogOut, User as UserIcon, ShieldAlert } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -11,19 +11,16 @@ export const Navbar: React.FC = () => {
       <div className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 h-16 flex items-center justify-between">
         
         <div className="flex items-center gap-6">
-          {/* Brand Logo */}
+          {/* Brand Logo with New LocalBite Official Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
-              <Utensils className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-extrabold text-xl tracking-tight text-slate-900">
-                Local<span className="text-amber-600">Bite</span>
-              </span>
-              <span className="hidden sm:inline-block ml-2 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                Live Stalls
-              </span>
-            </div>
+            <img
+              src="/logo.png"
+              alt="LocalBite"
+              className="h-12 sm:h-14 w-auto object-contain group-hover:scale-105 transition-transform"
+            />
+            <span className="hidden sm:inline-block ml-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 shadow-2xs">
+              Live Stalls
+            </span>
           </Link>
 
           {/* Core Navigation Links */}

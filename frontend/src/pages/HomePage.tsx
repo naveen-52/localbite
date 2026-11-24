@@ -398,9 +398,7 @@ export const HomePage: React.FC = () => {
           </div>
         ) : filteredShops.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300 max-w-lg mx-auto p-6 shadow-sm">
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-3">
-              <Utensils className="w-7 h-7" />
-            </div>
+            <img src="/logo.png" alt="LocalBite" className="h-16 w-auto mx-auto mb-3 object-contain" />
             <h3 className="text-base font-bold text-slate-800">No stalls found in this radius</h3>
             <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
               No registered stalls found within {radiusKm} km of this location, or they don't match the selected filter.
