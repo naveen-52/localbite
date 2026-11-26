@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { AvailabilitySocketClient } from '../services/websocket';
@@ -12,16 +12,13 @@ export const ShopDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [liveSocketActive, setLiveSocketActive] = useState(false);
   const [lastUpdatedNotice, setLastUpdatedNotice] = useState<string | null>(null);
+  const [updatedItemId, setUpdatedItemId] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (slug) {
-      loadShopAndMenu(slug);
-    }
-  }, [slug]);
+  const socketClientRef = useRef<AvailabilitySocketClient | null>(null);
 
-  const loadShopAndMenu = async (shopSlug: string) => {
+  const loadShopAndMenu = useCallback(async (shopSlug: string, isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const shopRes = await api.getShopBySlug(shopSlug);
       if (shopRes.success && shopRes.data) {
         const currentShop = shopRes.data;
@@ -32,43 +29,72 @@ export const ShopDetailPage: React.FC = () => {
           setMenu(menuRes.data);
         }
 
-        // Initialize Real-Time WebSocket Listener
-        const socketClient = new AvailabilitySocketClient();
-        socketClient.connect(
-          currentShop.id,
-          (event: AvailabilityEvent) => {
-            // Live state update on menu item
-            setMenu((prevMenu) =>
-              prevMenu.map((item) =>
-                item.id === event.foodItemId
-                  ? {
-                      ...item,
-                      availabilityStatus: event.status,
-                      currentQuantity: event.remainingQuantity ?? item.currentQuantity,
-                      updatedAt: event.updatedAt,
-                    }
-                  : item
-              )
-            );
+        // Initialize Real-Time WebSocket Listener if not already active
+        if (!socketClientRef.current) {
+          const socketClient = new AvailabilitySocketClient();
+          socketClientRef.current = socketClient;
 
-            setLastUpdatedNotice(`⚡ "${event.foodName}" availability updated to ${event.status.replace('_', ' ')}!`);
-            setTimeout(() => setLastUpdatedNotice(null), 4000);
-          },
-          () => setLiveSocketActive(false)
-        );
+          socketClient.connect(
+            currentShop.id,
+            (event: AvailabilityEvent) => {
+              // Live state update on menu item
+              setMenu((prevMenu) =>
+                prevMenu.map((item) =>
+                  item.id === event.foodItemId
+                    ? {
+                        ...item,
+                        availabilityStatus: event.status,
+                        currentQuantity: event.remainingQuantity ?? item.currentQuantity,
+                        updatedAt: event.updatedAt,
+                      }
+                    : item
+                )
+              );
 
-        setLiveSocketActive(true);
+              setUpdatedItemId(event.foodItemId);
+              setLastUpdatedNotice(`⚡ "${event.foodName}" availability updated to ${event.status.replace('_', ' ')}!`);
+              setTimeout(() => {
+                setLastUpdatedNotice(null);
+                setUpdatedItemId(null);
+              }, 4000);
+            },
+            () => setLiveSocketActive(false)
+          );
 
-        return () => {
-          socketClient.disconnect();
-        };
+          setLiveSocketActive(true);
+        }
       }
     } catch (e) {
       console.error('Failed to load shop:', e);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (slug) {
+      loadShopAndMenu(slug);
+    }
+
+    // Auto-refresh stall data every 15 seconds to ensure operating hours, closure, and dishes stay 100% in sync
+    const interval = setInterval(() => {
+      if (slug) loadShopAndMenu(slug, true);
+    }, 15000);
+
+    const onFocus = () => {
+      if (slug) loadShopAndMenu(slug, true);
+    };
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+      if (socketClientRef.current) {
+        socketClientRef.current.disconnect();
+        socketClientRef.current = null;
+      }
+    };
+  }, [slug, loadShopAndMenu]);
 
   if (loading) {
     return (
@@ -210,7 +236,9 @@ export const ShopDetailPage: React.FC = () => {
               return (
                 <div
                   key={dish.id}
-                  className={`bg-white rounded-2xl p-4 sm:p-5 border transition-all flex flex-col justify-between ${
+                  className={`bg-white rounded-2xl p-4 sm:p-5 border transition-all duration-300 flex flex-col justify-between ${
+                    dish.id === updatedItemId ? 'ring-2 ring-emerald-500 scale-[1.02] shadow-lg' : ''
+                  } ${
                     isSoldOut
                       ? 'border-slate-200 opacity-60 bg-slate-50'
                       : 'border-slate-200 shadow-sm hover:border-amber-300 hover:shadow-md'

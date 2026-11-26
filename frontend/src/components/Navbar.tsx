@@ -255,14 +255,14 @@ export const Navbar: React.FC = () => {
                     onClick={closeMobileMenu}
                     className="flex-1 py-2.5 text-center text-xs font-black text-white bg-[#C92F32] hover:bg-[#AE292E] rounded-xl shadow-xs"
                   >
-                    Sign In
+                    Owner Sign In
                   </Link>
                   <Link
-                    to="/register"
+                    to="/register?role=SHOP_OWNER"
                     onClick={closeMobileMenu}
-                    className="flex-1 py-2.5 text-center text-xs font-bold text-[#25233A] bg-slate-100 hover:bg-slate-200 rounded-xl"
+                    className="flex-1 py-2.5 text-center text-xs font-bold text-[#FF8A00] bg-[#FF8A00]/10 border border-[#FF8A00]/30 hover:bg-[#FF8A00]/20 rounded-xl"
                   >
-                    Create Account
+                    Register Stall
                   </Link>
                 </div>
               )}

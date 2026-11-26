@@ -965,8 +965,8 @@ export const LandingPage: React.FC = () => {
                 Platform
               </p>
               <ul className="space-y-2 text-slate-400 font-medium">
-                <li><Link to="/login" className="hover:text-white transition-colors">Sign In</Link></li>
-                <li><Link to="/register" className="hover:text-white transition-colors">Create Account</Link></li>
+                <li><Link to="/login" className="hover:text-white transition-colors">Owner &amp; Admin Sign In</Link></li>
+                <li><Link to="/register?role=SHOP_OWNER" className="hover:text-white transition-colors">Register Your Stall</Link></li>
                 <li><Link to="/admin/dashboard" className="hover:text-white transition-colors">Admin Control Hub</Link></li>
                 <li><Link to="/explore" className="hover:text-white transition-colors">Open Street Radar</Link></li>
               </ul>

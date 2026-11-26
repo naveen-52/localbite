@@ -57,11 +57,26 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+
+    // Auto-sync stall availability every 15s to catch real-time owner updates
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 15000);
+
+    const onFocus = () => {
+      fetchData(true);
+    };
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [userLocation, radiusKm]);
 
-  const fetchData = async () => {
+  const fetchData = async (isSilent = false) => {
     try {
-      setLoading(true);
+      if (!isSilent) setLoading(true);
       const [shopsRes, catRes] = await Promise.all([
         api.getNearbyShops(userLocation.lat, userLocation.lng, radiusKm),
         api.getCategories(),
@@ -79,7 +94,7 @@ export const HomePage: React.FC = () => {
     } catch (e) {
       console.error('Failed to fetch nearby shops:', e);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
