@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+@theme {
+  --color-tomato: #EF4444;
+  --color-street-orange: #FF8A00;
+  --color-turmeric: #FFD43B;
+  --color-warm-cream: #FFF8EC;
+  --color-charcoal: #25233A;
+  --color-primary: #C92F32;
+  --color-primary-hover: #AE292E;
+}
+
 @layer base {
   :root {
     --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -7,9 +17,77 @@
 
   body {
     font-family: var(--font-sans);
-    background-color: #f8fafc;
-    color: #0f172a;
+    background-color: #FFF8EC;
+    color: #25233A;
     -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Warm food festival radial gradient for hero */
+.hero-radial-bg {
+  background: radial-gradient(circle at 50% 20%, rgba(255, 212, 59, 0.18) 0%, rgba(255, 138, 0, 0.12) 35%, rgba(255, 248, 236, 0.95) 75%), #FFF8EC;
+}
+
+/* Soft ambient background */
+.warm-festival-bg {
+  background-color: #FFF8EC;
+}
+
+/* Interactive Card Lift Animation */
+.card-hover-lift {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -8px rgba(37, 35, 58, 0.08), 0 8px 16px -4px rgba(255, 138, 0, 0.06);
+}
+
+/* Smooth Horizontal Carousel Snapping */
+.carousel-snap {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.carousel-item-snap {
+  scroll-snap-align: start;
+}
+
+/* Hide scrollbar while preserving scroll functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Animated radar ping */
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+.radar-pulse-ring {
+  animation: radar-pulse 2.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .card-hover-lift,
+  .radar-pulse-ring,
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
